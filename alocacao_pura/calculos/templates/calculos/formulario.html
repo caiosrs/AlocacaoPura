@@ -1,0 +1,354 @@
+{% extends "calculos/base.html" %}
+{% load static %}
+
+{% block title %}Cálculo de valor Alocação Pura{% endblock %}
+
+{% block content %}
+    <h1 class="mt-5">Cálculo de Alocação Pura</h1>
+    <form method="post" id="calculo-form" style="padding: 20px;">
+        {% csrf_token %}
+        <div class="form-group">
+            <label for="id_cargo">Cargo</label>
+            <input type="text" id="id_cargo" name="cargo" class="form-control" autocomplete="off" placeholder="Digite o nome do cargo...">
+            <div id="autocomplete-suggestions" class="autocomplete-suggestions"></div>
+        </div>
+        <div class="form-row">
+            <div class="form-group col-md-6">
+                <label for="id_salario">Salário</label>
+                <input type="text" id="id_salario" name="salario" class="form-control" placeholder="R$ 0,00" readonly>
+            </div>
+            <div class="form-group col-md-6">
+                <label for="id_assistencia_medica">Assistência Médica</label>
+                <input type="text" id="id_assistencia_medica" name="assistencia_medica" class="form-control" value="450,00">
+            </div>
+        </div>
+        <div class="form-row">
+            <div class="form-group col-md-6">
+                <label>Assistência Odontológica</label>
+                <input type="text" id="id_assistencia_odonto" name="assistencia_odonto" class="form-control" value="21,96">
+            </div>
+            <div class="form-group col-md-6">
+                <label>Seguro</label>
+                <input type="text" id="id_seguro" name="seguro" class="form-control" value="7,27">
+            </div>
+        </div>
+        <div class="form-row">
+            <div class="form-group col-md-6">
+                <label>Vale Refeição</label>
+                <input type="text" id="id_vr" name="vr" class="form-control" value="605,00">
+            </div>
+            <div class="form-group col-md-6">
+                <label>Vale Alimentação</label>
+                <input type="text" id="id_va" name="va" class="form-control" value="0,00">
+            </div>
+        </div>
+        <div class="form-row">
+            <div class="form-group col-md-6">
+                <label>Vale Transporte</label>
+                <input type="text" id="id_vt" name="vt" class="form-control" value="200,00">
+            </div>
+            <div class="form-group col-md-6">
+                <label>Gym Pass</label>
+                <input type="text" id="id_gympass" name="gympass" class="form-control" value="14,73">
+            </div>
+        </div>
+        <button type="button" class="btn btn-secondary" id="calcular-btn" data-toggle="modal" data-target="#calcularModal">Calcular</button>
+        <button type="button" class="btn btn-danger" id="limpar-btn">Limpar</button>
+    </form>
+
+    <!-- Modal -->
+    <div class="modal fade" id="calcularModal" tabindex="-1" role="dialog" aria-labelledby="calcularModalLabel" aria-hidden="true">
+        <div class="modal-dialog modal-lg" role="document">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="calcularModalLabel">Resultado do Cálculo</h5>
+                    <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                        <span aria-hidden="true">&times;</span>
+                    </button>
+                </div>
+                <div class="modal-body">
+                    <div class="container-fluid">
+                        <div class="row">
+                            <div class="col-md-6">
+                                <table class="table table-bordered">
+                                    <thead>
+                                        <tr>
+                                            <th>Descrição</th>
+                                            <th>Valor</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        <tr>
+                                            <td>Salário</td>
+                                            <td id="salario"></td>
+                                        </tr>
+                                        <tr>
+                                            <td>Assistência Médica</td>
+                                            <td id="assistencia_medica"></td>
+                                        </tr>
+                                        <tr>
+                                            <td>Assistência Odontológica</td>
+                                            <td id="assistencia_odonto"></td>
+                                        </tr>
+                                        <tr>
+                                            <td>Vale Refeição</td>
+                                            <td id="vr"></td>
+                                        </tr>
+                                        <tr>
+                                            <td>Vale Alimentação</td>
+                                            <td id="va"></td>
+                                        </tr>
+                                        <tr>
+                                            <td>Vale Transporte</td>
+                                            <td id="vt"></td>
+                                        </tr>
+                                        <tr>
+                                            <td>Seguro</td>
+                                            <td id="seguro"></td>
+                                        </tr>
+                                        <tr>
+                                            <td>Gym Pass</td>
+                                            <td id="gympass"></td>
+                                        </tr>
+                                    </tbody>
+                                </table>
+                            </div>
+                            <div class="col-md-6">
+                                <table class="table table-bordered">
+                                    <thead>
+                                        <tr>
+                                            <th>Descrição</th>
+                                            <th>Valor</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        <tr>
+                                            <td>Encargos Sociais (Legais + Provisões)</td>
+                                            <td id="encargos_sociais"></td>
+                                        </tr>
+                                        <tr>
+                                            <td>Total Salário + Encargos</td>
+                                            <td id="total_sal_encargos"></td>
+                                        </tr>
+                                        <tr>
+                                            <td>Total Benefícios</td>
+                                            <td id="total_beneficios"></td>
+                                        </tr>
+                                        <tr>
+                                            <td>Total do Custo do Serviço Prestado</td>
+                                            <td id="total_servico_prestado"></td>
+                                        </tr>
+                                        <tr>
+                                            <td>Despesas Operacionais 5%</td>
+                                            <td id="despesas_operacionais"></td>
+                                        </tr>
+                                        <tr>
+                                            <td>Lucro 15%</td>
+                                            <td id="lucro"></td>
+                                        </tr>
+                                        <tr>
+                                            <td>Preço de Venda sem Impostos</td>
+                                            <td id="preco_venda_sem_impostos"></td>
+                                        </tr>
+                                    </tbody>
+                                </table>
+                            </div>
+                            <div class="col-md-6">
+                                <table class="table table-bordered">
+                                    <thead>
+                                        <tr>
+                                            <th>Impostos</th>
+                                            <th>Valor</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        <tr>
+                                            <td>ISS</td>
+                                            <td id="iss"></td>
+                                        </tr>
+                                        <tr>
+                                            <td>PIS</td>
+                                            <td id="pis"></td>
+                                        </tr>
+                                        <tr>
+                                            <td>Cofins</td>
+                                            <td id="cofins"></td>
+                                        </tr>
+                                        <tr>
+                                            <td>IR</td>
+                                            <td id="ir"></td>
+                                        </tr>
+                                        <tr>
+                                            <td>CSLL</td>
+                                            <td id="csll"></td>
+                                        </tr>
+                                        <tr>
+                                            <td>Total</td>
+                                            <td id="total_impostos"></td>
+                                        </tr>
+                                    </tbody>
+                                </table>
+                            </div>
+                            <tr>
+                                <td>Preço de Venda com Impostos - Mês</td>
+                                <td id="preco_venda_com_impostos"></td>
+                            </tr>
+                        </div>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-dismiss="modal">Fechar</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', () => {
+            const input = document.getElementById('id_cargo');
+            const suggestionsContainer = document.getElementById('autocomplete-suggestions');
+            const salarioInput = document.getElementById('id_salario');
+            let currentFocus = -1;
+        
+            function formatSalario(salario) {
+                return new Intl.NumberFormat('pt-BR', {
+                    style: 'currency',
+                    currency: 'BRL'
+                }).format(salario);
+            }
+        
+            function renderSuggestions(suggestions) {
+                suggestionsContainer.innerHTML = '';
+                currentFocus = -1;
+                suggestions.forEach((suggestion, index) => {
+                    const div = document.createElement('div');
+                    div.textContent = suggestion;
+                    div.classList.add('autocomplete-suggestion');
+                    div.addEventListener('click', () => {
+                        input.value = suggestion;
+                        suggestionsContainer.innerHTML = '';
+                        getSalario(suggestion).then(salario => {
+                            salarioInput.value = salario ? formatSalario(salario) : '';
+                        });
+                    });
+                    div.addEventListener('mouseover', () => {
+                        currentFocus = index;
+                        updateSuggestionHighlight();
+                    });
+                    suggestionsContainer.appendChild(div);
+                });
+            }
+        
+            function updateSuggestionHighlight() {
+                const items = suggestionsContainer.querySelectorAll('.autocomplete-suggestion');
+                items.forEach((item, index) => {
+                    item.classList.toggle('highlight', index === currentFocus);
+                });
+            }
+        
+            input.addEventListener('input', () => {
+                const query = input.value.trim();
+                if (query.length >= 3) {
+                    getSuggestions(query).then(suggestions => {
+                        renderSuggestions(suggestions);
+                    });
+                } else {
+                    suggestionsContainer.innerHTML = '';
+                }
+            });
+        
+            input.addEventListener('keydown', (e) => {
+                const items = suggestionsContainer.querySelectorAll('.autocomplete-suggestion');
+                if (e.key === 'ArrowDown') {
+                    currentFocus++;
+                    if (currentFocus >= items.length) currentFocus = 0;
+                    updateSuggestionHighlight();
+                    input.value = items[currentFocus] ? items[currentFocus].textContent : '';
+                } else if (e.key === 'ArrowUp') {
+                    currentFocus--;
+                    if (currentFocus < 0) currentFocus = items.length - 1;
+                    updateSuggestionHighlight();
+                    input.value = items[currentFocus] ? items[currentFocus].textContent : '';
+                } else if (e.key === 'Enter') {
+                    e.preventDefault();
+                    if (currentFocus > -1 && items[currentFocus]) {
+                        items[currentFocus].click();
+                    }
+                }
+            });
+        
+            document.addEventListener('click', (e) => {
+                if (!input.contains(e.target) && !suggestionsContainer.contains(e.target)) {
+                    suggestionsContainer.innerHTML = '';
+                }
+            });
+        
+            document.getElementById('calcular-btn').addEventListener('click', () => {
+                const form = document.getElementById('calculo-form');
+                const formData = new FormData(form);
+        
+                const xhr = new XMLHttpRequest();
+                xhr.open('POST', '{% url "calculo" %}', true);
+
+                xhr.setRequestHeader('X-Requested-With', 'XMLHttpRequest');
+        
+                xhr.onload = function() {
+                    if (xhr.status === 200) {
+                        const result = JSON.parse(xhr.responseText);
+                        document.getElementById('assistencia_medica').value = formatSalario(result['Assistência Médica']);
+                        document.getElementById('assistencia_odonto').value = formatSalario(result['Assistência Odontológica']);
+                        document.getElementById('seguro').value = formatSalario(result['Seguro']);
+                        document.getElementById('vale_refeicao').value = formatSalario(result['Vale Refeição']);
+                        document.getElementById('vale_alimentacao').value = formatSalario(result['Vale Alimentação']);
+                        document.getElementById('vale_transporte').value = formatSalario(result['Vale Transporte']);
+                        document.getElementById('gym_pass').value = formatSalario(result['Gym Pass']);
+                        document.getElementById('encargos_sociais').value = formatSalario(result['Encargos Sociais (Legais + Provisões)']);
+                        document.getElementById('total_sal_encargos').value = formatSalario(result['Total Salário + Encargos']);
+                        document.getElementById('total_beneficios').value = formatSalario(result['Total Benefícios']);
+                        document.getElementById('total_custo_servico').value = formatSalario(result['Total do Custo do Serviço Prestado']);
+                        document.getElementById('despesas_operacionais').value = formatSalario(result['Despesas Operacionais 5%']);
+                        document.getElementById('lucro').value = formatSalario(result['Lucro 15%']);
+                        document.getElementById('preco_venda_sem_impostos').value = formatSalario(result['Preço de Venda sem Impostos']);
+                        document.getElementById('iss').value = formatSalario(result['ISS']);
+                        document.getElementById('pis').value = formatSalario(result['PIS']);
+                        document.getElementById('cofins').value = formatSalario(result['Cofins']);
+                        document.getElementById('ir').value = formatSalario(result['IR']);
+                        document.getElementById('csll').value = formatSalario(result['CSLL']);
+                        document.getElementById('total_impostos').value = formatSalario(result['Total']);
+                        document.getElementById('preco_venda_com_impostos').value = formatSalario(result['Preço de Venda com Impostos - Mês']);
+                    }
+                };
+        
+                xhr.send(formData);
+            });
+        
+            function getSuggestions(query) {
+                return new Promise((resolve) => {
+                    const xhr = new XMLHttpRequest();
+                    xhr.open('GET', '{% url "autocomplete_funcionarios" %}?term=' + query, true);
+                    xhr.onload = function() {
+                        if (xhr.status === 200) {
+                            const suggestions = JSON.parse(xhr.responseText);
+                            resolve(suggestions);
+                        }
+                    };
+                    xhr.send();
+                });
+            }
+        
+            function getSalario(cargo) {
+                return new Promise((resolve) => {
+                    const xhr = new XMLHttpRequest();
+                    xhr.open('GET', '{% url "obter_salario" %}?cargo=' + cargo, true);
+                    xhr.onload = function() {
+                        if (xhr.status === 200) {
+                            const response = JSON.parse(xhr.responseText);
+                            resolve(response.salario);
+                        }
+                    };
+                    xhr.send();
+                });
+            }
+        });
+    </script>    
+{% endblock %}
