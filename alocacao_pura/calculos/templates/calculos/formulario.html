@@ -15,7 +15,7 @@
         <div class="form-row">
             <div class="form-group col-md-6">
                 <label for="id_salario">Salário</label>
-                <input type="text" id="id_salario" name="salario" class="form-control" placeholder="R$ 0,00" readonly>
+                <input type="text" id="id_salario" name="salario" class="form-control" placeholder="R$ 0,00">
             </div>
             <div class="form-group col-md-6">
                 <label for="id_assistencia_medica">Assistência Médica</label>
@@ -214,150 +214,200 @@
 
     <script>
         document.addEventListener('DOMContentLoaded', () => {
-            const input = document.getElementById('id_cargo');
-            const suggestionsContainer = document.getElementById('autocomplete-suggestions');
-            const salarioInput = document.getElementById('id_salario');
-            let currentFocus = -1;
-        
-            function formatSalario(salario) {
-                return new Intl.NumberFormat('pt-BR', {
-                    style: 'currency',
-                    currency: 'BRL'
-                }).format(salario);
-            }
-        
-            function renderSuggestions(suggestions) {
-                suggestionsContainer.innerHTML = '';
-                currentFocus = -1;
-                suggestions.forEach((suggestion, index) => {
-                    const div = document.createElement('div');
-                    div.textContent = suggestion;
-                    div.classList.add('autocomplete-suggestion');
-                    div.addEventListener('click', () => {
-                        input.value = suggestion;
-                        suggestionsContainer.innerHTML = '';
-                        getSalario(suggestion).then(salario => {
-                            salarioInput.value = salario ? formatSalario(salario) : '';
-                        });
-                    });
-                    div.addEventListener('mouseover', () => {
-                        currentFocus = index;
-                        updateSuggestionHighlight();
-                    });
-                    suggestionsContainer.appendChild(div);
-                });
-            }
-        
-            function updateSuggestionHighlight() {
-                const items = suggestionsContainer.querySelectorAll('.autocomplete-suggestion');
-                items.forEach((item, index) => {
-                    item.classList.toggle('highlight', index === currentFocus);
-                });
-            }
-        
-            input.addEventListener('input', () => {
-                const query = input.value.trim();
-                if (query.length >= 3) {
-                    getSuggestions(query).then(suggestions => {
-                        renderSuggestions(suggestions);
-                    });
-                } else {
-                    suggestionsContainer.innerHTML = '';
-                }
-            });
-        
-            input.addEventListener('keydown', (e) => {
-                const items = suggestionsContainer.querySelectorAll('.autocomplete-suggestion');
-                if (e.key === 'ArrowDown') {
-                    currentFocus++;
-                    if (currentFocus >= items.length) currentFocus = 0;
-                    updateSuggestionHighlight();
-                    input.value = items[currentFocus] ? items[currentFocus].textContent : '';
-                } else if (e.key === 'ArrowUp') {
-                    currentFocus--;
-                    if (currentFocus < 0) currentFocus = items.length - 1;
-                    updateSuggestionHighlight();
-                    input.value = items[currentFocus] ? items[currentFocus].textContent : '';
-                } else if (e.key === 'Enter') {
-                    e.preventDefault();
-                    if (currentFocus > -1 && items[currentFocus]) {
-                        items[currentFocus].click();
-                    }
-                }
-            });
-        
-            document.addEventListener('click', (e) => {
-                if (!input.contains(e.target) && !suggestionsContainer.contains(e.target)) {
-                    suggestionsContainer.innerHTML = '';
-                }
-            });
-        
-            document.getElementById('calcular-btn').addEventListener('click', () => {
-                const form = document.getElementById('calculo-form');
-                const formData = new FormData(form);
-        
-                const xhr = new XMLHttpRequest();
-                xhr.open('POST', '{% url "calculo" %}', true);
+    const input = document.getElementById('id_cargo');
+    const suggestionsContainer = document.getElementById('autocomplete-suggestions');
+    const salarioInput = document.getElementById('id_salario');
+    const assistenciaMedicaInput = document.getElementById('id_assistencia_medica');
+    const assistenciaOdontoInput = document.getElementById('id_assistencia_odonto');
+    const seguroInput = document.getElementById('id_seguro');
+    const vrInput = document.getElementById('id_vr');
+    const vaInput = document.getElementById('id_va');
+    const vtInput = document.getElementById('id_vt');
+    const gympassInput = document.getElementById('id_gympass');
 
-                xhr.setRequestHeader('X-Requested-With', 'XMLHttpRequest');
-        
-                xhr.onload = function() {
-                    if (xhr.status === 200) {
-                        const result = JSON.parse(xhr.responseText);
-                        document.getElementById('assistencia_medica').value = formatSalario(result['Assistência Médica']);
-                        document.getElementById('assistencia_odonto').value = formatSalario(result['Assistência Odontológica']);
-                        document.getElementById('seguro').value = formatSalario(result['Seguro']);
-                        document.getElementById('vale_refeicao').value = formatSalario(result['Vale Refeição']);
-                        document.getElementById('vale_alimentacao').value = formatSalario(result['Vale Alimentação']);
-                        document.getElementById('vale_transporte').value = formatSalario(result['Vale Transporte']);
-                        document.getElementById('gym_pass').value = formatSalario(result['Gym Pass']);
-                        document.getElementById('encargos_sociais').value = formatSalario(result['Encargos Sociais (Legais + Provisões)']);
-                        document.getElementById('total_sal_encargos').value = formatSalario(result['Total Salário + Encargos']);
-                        document.getElementById('total_beneficios').value = formatSalario(result['Total Benefícios']);
-                        document.getElementById('total_custo_servico').value = formatSalario(result['Total do Custo do Serviço Prestado']);
-                        document.getElementById('despesas_operacionais').value = formatSalario(result['Despesas Operacionais 5%']);
-                        document.getElementById('lucro').value = formatSalario(result['Lucro 15%']);
-                        document.getElementById('preco_venda_sem_impostos').value = formatSalario(result['Preço de Venda sem Impostos']);
-                        document.getElementById('iss').value = formatSalario(result['ISS']);
-                        document.getElementById('pis').value = formatSalario(result['PIS']);
-                        document.getElementById('cofins').value = formatSalario(result['Cofins']);
-                        document.getElementById('ir').value = formatSalario(result['IR']);
-                        document.getElementById('csll').value = formatSalario(result['CSLL']);
-                        document.getElementById('total_impostos').value = formatSalario(result['Total']);
-                        document.getElementById('preco_venda_com_impostos').value = formatSalario(result['Preço de Venda com Impostos - Mês']);
-                    }
-                };
-        
-                xhr.send(formData);
+    let currentFocus = -1;
+
+    function formatNumber(value) {
+        if (typeof value === 'number') {
+            return value.toLocaleString('pt-BR', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+        }
+        return value;
+    }
+
+    function parseValue(value) {
+        return parseFloat(value.replace('R$ ', '').replace('.', '').replace(',', '.')) || 0;
+    }
+
+    function calculateAndDisplayResults() {
+        const salario = parseValue(salarioInput.value);
+        const assistenciaMedica = parseValue(assistenciaMedicaInput.value);
+        const assistenciaOdonto = parseValue(assistenciaOdontoInput.value);
+        const seguro = parseValue(seguroInput.value);
+        const vr = parseValue(vrInput.value);
+        const va = parseValue(vaInput.value);
+        const vt = parseValue(vtInput.value);
+        const gympass = parseValue(gympassInput.value);
+
+        const encargosSociais = salario * 0.65;
+        const totalSalEncargos = salario + encargosSociais;
+        const totalBeneficios = assistenciaMedica + assistenciaOdonto + seguro + vr + va + vt + gympass;
+        const totalServicoPrestado = totalSalEncargos + totalBeneficios;
+        const despesasOperacionais = totalServicoPrestado * 0.05;
+        const lucro = totalServicoPrestado * 0.15;
+        const precoVendaSemImpostos = totalServicoPrestado + despesasOperacionais + lucro;
+        const totalImpostos = 0.20;
+        const precoVendaComImpostos = precoVendaSemImpostos / (1 - totalImpostos);
+
+        const iss = 0.05;
+        const pis = 0.01;
+        const cofins = 0.03;
+        const ir = 0.08;
+        const csll = 0.03;
+
+        const issCalculado = iss * precoVendaComImpostos;
+        const pisCalculado = pis * precoVendaComImpostos;
+        const cofinsCalculado = cofins * precoVendaComImpostos;
+        const irCalculado = ir * precoVendaComImpostos;
+        const csllCalculado = csll * precoVendaComImpostos;
+
+        document.getElementById('salario').textContent = formatNumber(salario);
+        document.getElementById('assistencia_medica').textContent = formatNumber(assistenciaMedica);
+        document.getElementById('assistencia_odonto').textContent = formatNumber(assistenciaOdonto);
+        document.getElementById('vr').textContent = formatNumber(vr);
+        document.getElementById('va').textContent = formatNumber(va);
+        document.getElementById('vt').textContent = formatNumber(vt);
+        document.getElementById('seguro').textContent = formatNumber(seguro);
+        document.getElementById('gympass').textContent = formatNumber(gympass);
+
+        document.getElementById('encargos_sociais').textContent = formatNumber(encargosSociais);
+        document.getElementById('total_sal_encargos').textContent = formatNumber(totalSalEncargos);
+        document.getElementById('total_beneficios').textContent = formatNumber(totalBeneficios);
+        document.getElementById('total_servico_prestado').textContent = formatNumber(totalServicoPrestado);
+        document.getElementById('despesas_operacionais').textContent = formatNumber(despesasOperacionais);
+        document.getElementById('lucro').textContent = formatNumber(lucro);
+        document.getElementById('preco_venda_sem_impostos').textContent = formatNumber(precoVendaSemImpostos);
+
+        document.getElementById('iss').textContent = formatNumber(issCalculado);
+        document.getElementById('pis').textContent = formatNumber(pisCalculado);
+        document.getElementById('cofins').textContent = formatNumber(cofinsCalculado);
+        document.getElementById('ir').textContent = formatNumber(irCalculado);
+        document.getElementById('csll').textContent = formatNumber(csllCalculado);
+        document.getElementById('total_impostos').textContent = formatNumber(issCalculado + pisCalculado + cofinsCalculado + irCalculado + csllCalculado);
+
+        document.getElementById('preco_venda_com_impostos').textContent = formatNumber(precoVendaComImpostos);
+    }
+
+    // Certifique-se de que o botão de cálculo está corretamente configurado
+    document.getElementById('calcular-btn').addEventListener('click', calculateAndDisplayResults);
+
+    function renderSuggestions(suggestions) {
+        suggestionsContainer.innerHTML = '';
+        currentFocus = -1;
+        suggestions.forEach((suggestion, index) => {
+            const div = document.createElement('div');
+            div.textContent = suggestion;
+            div.classList.add('autocomplete-suggestion');
+            div.addEventListener('click', () => {
+                input.value = suggestion;
+                suggestionsContainer.innerHTML = '';
+                getSalario(suggestion).then(salario => {
+                    salarioInput.value = salario ? formatNumber(salario) : '';
+                    // Atualize outros campos de acordo com o salário, se necessário
+                });
             });
-        
-            function getSuggestions(query) {
-                return new Promise((resolve) => {
-                    const xhr = new XMLHttpRequest();
-                    xhr.open('GET', '{% url "autocomplete_funcionarios" %}?term=' + query, true);
-                    xhr.onload = function() {
-                        if (xhr.status === 200) {
-                            const suggestions = JSON.parse(xhr.responseText);
-                            resolve(suggestions);
-                        }
-                    };
-                    xhr.send();
-                });
-            }
-        
-            function getSalario(cargo) {
-                return new Promise((resolve) => {
-                    const xhr = new XMLHttpRequest();
-                    xhr.open('GET', '{% url "obter_salario" %}?cargo=' + cargo, true);
-                    xhr.onload = function() {
-                        if (xhr.status === 200) {
-                            const response = JSON.parse(xhr.responseText);
-                            resolve(response.salario);
-                        }
-                    };
-                    xhr.send();
-                });
-            }
+            div.addEventListener('mouseover', () => {
+                currentFocus = index;
+                updateSuggestionHighlight();
+            });
+            suggestionsContainer.appendChild(div);
         });
-    </script>    
+    }
+
+    function updateSuggestionHighlight() {
+        const items = suggestionsContainer.querySelectorAll('.autocomplete-suggestion');
+        items.forEach((item, index) => {
+            item.classList.toggle('highlight', index === currentFocus);
+        });
+    }
+
+    input.addEventListener('input', () => {
+        const query = input.value.trim();
+        if (query.length >= 3) {
+            getSuggestions(query).then(suggestions => {
+                renderSuggestions(suggestions);
+            });
+        } else {
+            suggestionsContainer.innerHTML = '';
+        }
+    });
+
+    input.addEventListener('keydown', (e) => {
+        const items = suggestionsContainer.querySelectorAll('.autocomplete-suggestion');
+        if (e.key === 'ArrowDown') {
+            currentFocus++;
+            if (currentFocus >= items.length) currentFocus = 0;
+            updateSuggestionHighlight();
+            input.value = items[currentFocus] ? items[currentFocus].textContent : '';
+        } else if (e.key === 'ArrowUp') {
+            currentFocus--;
+            if (currentFocus < 0) currentFocus = items.length - 1;
+            updateSuggestionHighlight();
+            input.value = items[currentFocus] ? items[currentFocus].textContent : '';
+        } else if (e.key === 'Enter') {
+            e.preventDefault();
+            if (currentFocus > -1 && items[currentFocus]) {
+                items[currentFocus].click();
+            }
+        }
+    });
+
+    document.addEventListener('click', (e) => {
+        if (!input.contains(e.target) && !suggestionsContainer.contains(e.target)) {
+            suggestionsContainer.innerHTML = '';
+        }
+    });
+
+    function getSuggestions(query) {
+        return new Promise((resolve) => {
+            const xhr = new XMLHttpRequest();
+            xhr.open('GET', '{% url "autocomplete_funcionarios" %}?term=' + query, true);
+            xhr.onload = function() {
+                if (xhr.status === 200) {
+                    const suggestions = JSON.parse(xhr.responseText);
+                    resolve(suggestions);
+                }
+            };
+            xhr.send();
+        });
+    }
+
+    function getSalario(cargo) {
+        return new Promise((resolve) => {
+            const xhr = new XMLHttpRequest();
+            xhr.open('GET', '{% url "obter_salario" %}?cargo=' + cargo, true);
+            xhr.onload = function() {
+                if (xhr.status === 200) {
+                    const response = JSON.parse(xhr.responseText);
+                    resolve(response.salario);
+                }
+            };
+            xhr.send();
+        });
+    }
+
+    document.getElementById('limpar-btn').addEventListener('click', () => {
+        input.value = '';
+        salarioInput.value = 'R$ 0,00';
+        assistenciaMedicaInput.value = 'R$ 450,00';
+        assistenciaOdontoInput.value = 'R$ 21,96';
+        seguroInput.value = 'R$ 7,27';
+        vrInput.value = 'R$ 605,00';
+        vaInput.value = 'R$ 0,00';
+        vtInput.value = 'R$ 200,00';
+        gympassInput.value = 'R$ 14,73';
+    });
+});
+
+    </script>
+    
 {% endblock %}
