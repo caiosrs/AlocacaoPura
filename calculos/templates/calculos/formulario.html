@@ -206,11 +206,8 @@
                         </div>
                     </div>
                     <div class="modal-footer">
-                        <button type="button" class="btn btn-info">Salvar PDF Completo</button>
-                        <!-- <form method="post" action="{% url 'salvar_pdf_resumido' %}">
-                            {% csrf_token %} -->
-                            <button type="submit" class="btn btn-primary" id="salvar_pdf_resumido">Salvar PDF Resumido</button>
-                        <!-- </form> -->
+                        <button type="submit" class="btn btn-danger" id="salvar_pdf_completo">Salvar PDF Completo</button>
+                        <button type="submit" class="btn btn-primary" id="salvar_pdf_resumido">Salvar PDF Resumido</button>
                         <button type="button" class="btn btn-secondary" data-dismiss="modal">Fechar</button>
                     </div>
                 </div>
@@ -325,6 +322,57 @@
                 formData.append('preco_venda_com_impostos', document.getElementById('preco_venda_com_impostos').innerText);
 
                 fetch("{% url 'salvar_pdf_resumido' %}", {
+                method: 'POST',
+                body: formData,
+                headers: {
+                    'X-CSRFToken': '{{ csrf_token }}'
+                }
+                })
+                .then(response => response.blob())
+                .then(blob => {
+                    const url = window.URL.createObjectURL(blob);
+                    const a = document.createElement('a');
+
+                    const cargo = document.getElementById('id_cargo').value || "Cargo";
+                    const dataBaixado = new Date().toLocaleDateString('pt-BR').replace(/\//g, '-');
+                    
+                    // Definir o nome do arquivo no formato desejado
+                    nome_arquivo = `Memorial-de-Calculo_${cargo}_${dataBaixado}.pdf`;
+                    
+                    a.href = url;
+                    a.download = nome_arquivo;
+                    document.body.appendChild(a);
+                    a.click();
+                    a.remove();
+                })
+                .catch(error => {
+                    console.error("Erro ao gerar o PDF:", error);
+                });
+            });
+
+            document.getElementById('salvar_pdf_completo').addEventListener('click', function() {
+                const formData = new FormData();
+
+                formData.append('cargo', document.getElementById('id_cargo').value);
+                formData.append('salario', document.getElementById('salario').innerText);
+                formData.append('assistencia_medica', document.getElementById('assistencia_medica').innerText);
+                formData.append('assistencia_odonto', document.getElementById('assistencia_odonto').innerText);
+                formData.append('seguro', document.getElementById('seguro').innerText);
+                formData.append('vr', document.getElementById('vr').innerText);
+                formData.append('va', document.getElementById('va').innerText);
+                formData.append('vt', document.getElementById('vt').innerText);
+                formData.append('gympass', document.getElementById('gympass').innerText);
+                formData.append('encargos_sociais', document.getElementById('encargos_sociais').innerText);
+                formData.append('total_sal_encargos', document.getElementById('total_sal_encargos').innerText);
+                formData.append('total_beneficios', document.getElementById('total_beneficios').innerText);
+                formData.append('total_servico_prestado', document.getElementById('total_servico_prestado').innerText);
+                formData.append('despesas_operacionais', document.getElementById('despesas_operacionais').innerText);
+                formData.append('lucro', document.getElementById('lucro').innerText);
+                formData.append('preco_venda_sem_impostos', document.getElementById('preco_venda_sem_impostos').innerText);
+                formData.append('total_impostos', document.getElementById('total_impostos').innerText);
+                formData.append('preco_venda_com_impostos', document.getElementById('preco_venda_com_impostos').innerText);
+
+                fetch("{% url 'salvar_pdf_completo' %}", {
                     method: 'POST',
                     body: formData,
                     headers: {
@@ -335,8 +383,15 @@
                 .then(blob => {
                     const url = window.URL.createObjectURL(blob);
                     const a = document.createElement('a');
+
+                    const cargo = document.getElementById('id_cargo').value || "Cargo";
+                    const dataBaixado = new Date().toLocaleDateString('pt-BR').replace(/\//g, '-');
+                    
+                    // Definir o nome do arquivo no formato desejado
+                    nome_arquivo = `Calculo-Alocacao-Pura_${cargo}_${dataBaixado}.pdf`;
+
                     a.href = url;
-                    a.download = "dados_modal_resumido.pdf";
+                    a.download = nome_arquivo;
                     document.body.appendChild(a);
                     a.click();
                     a.remove();
@@ -451,26 +506,7 @@
                 vtInput.value = '200,00';
                 gympassInput.value = '14,73';
             });
-            function salvarDados() {
-                $.ajax({
-                    type: 'POST',
-                    url: '{% url "salvar_pdf_resumido" %}',
-                    data: $('#modalForm').serialize(),
-                    xhrFields: {
-                        responseType: 'blob'  // Para lidar com a resposta binária (PDF)
-                    },
-                    success: function(blob) {
-                        // Cria um link temporário para download do PDF
-                        var link = document.createElement('a');
-                        link.href = window.URL.createObjectURL(blob);
-                        link.download = "dados_modal.pdf";
-                        link.click();
-                    },
-                    error: function(xhr, status, error) {
-                        console.error("Erro ao salvar PDF:", error);
-                    }
-                });
-            }
+            
         });
 
     </script>

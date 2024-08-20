@@ -10,4 +10,5 @@ urlpatterns = [
     path('autocomplete/', views.autocomplete_funcionarios, name='autocomplete_funcionarios'),
     path('obter-salario/', views.obter_salario, name='obter_salario'),
     path('salvar_pdf_resumido/', views.salvar_pdf_resumido, name='salvar_pdf_resumido'),
+    path('salvar_pdf_completo/', views.salvar_pdf_completo, name='salvar_pdf_completo'),
 ]
