@@ -52,7 +52,7 @@
                 <input type="text" id="id_gympass" name="gympass" class="form-control" value="14,73">
             </div>
         </div>
-        <button type="button" class="btn btn-secondary" id="calcular-btn" data-toggle="modal" data-target="#calcularModal">Calcular</button>
+        <button type="button" class="btn btn-primary" id="calcular-btn" data-toggle="modal" data-target="#calcularModal">Calcular</button>
         <button type="button" class="btn btn-danger" id="limpar-btn">Limpar</button>
     </form>
 
@@ -206,10 +206,41 @@
                         </div>
                     </div>
                     <div class="modal-footer">
-                        <button type="submit" class="btn btn-danger" id="salvar_pdf_completo">Salvar PDF Completo</button>
-                        <button type="submit" class="btn btn-primary" id="salvar_pdf_resumido">Salvar PDF Resumido</button>
+                        <button type="button" class="btn btn-primary" id="abrir-popup">Salvar</button>
                         <button type="button" class="btn btn-secondary" data-dismiss="modal">Fechar</button>
                     </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Modal para Nome do Cliente e Número da Proposta -->
+    <div class="modal fade" id="popupModal" tabindex="-1" role="dialog" aria-labelledby="popupModalLabel" aria-hidden="true">
+        <div class="modal-dialog" role="document">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="popupModalLabel">Informações Adicionais</h5>
+                    <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                        <span aria-hidden="true">&times;</span>
+                    </button>
+                </div>
+                <div class="modal-body">
+                    <form id="popupForm">
+                        <div class="form-group">
+                            <label for="nome_cliente">Nome do Cliente</label>
+                            <input type="text" id="nome_cliente" name="nome_cliente" class="form-control" placeholder="Digite o nome do cliente...">
+                        </div>
+                        <div class="form-group">
+                            <label for="numero_proposta">Número da Proposta</label>
+                            <input type="number" id="numero_proposta" name="numero_proposta" class="form-control" placeholder="Digite o número da proposta...">
+                        </div>
+                        <input type="hidden" id="form_action" name="form_action">
+                    </form>
+                </div>
+                <div class="modal-footer">
+                    <button type="submit" class="btn btn-danger" id="salvar_pdf_completo">Salvar PDF Completo</button>
+                    <button type="submit" class="btn btn-primary" id="salvar_pdf_resumido">Salvar PDF Resumido</button>
+                    <button type="button" class="btn btn-secondary" data-dismiss="modal">Fechar</button>
                 </div>
             </div>
         </div>
@@ -308,10 +339,8 @@
 
             document.getElementById('salvar_pdf_resumido').addEventListener('click', function() {
                 const formData = new FormData();
-                
-                var cargo = document.getElementById('id_cargo').value;
-                formData.append('cargo', cargo);
-                
+
+                formData.append('cargo', document.getElementById('id_cargo').value);
                 formData.append('salario', document.getElementById('salario').innerText);
                 formData.append('encargos_sociais', document.getElementById('encargos_sociais').innerText);
                 formData.append('total_beneficios', document.getElementById('total_beneficios').innerText);
@@ -321,24 +350,26 @@
                 formData.append('preco_venda_sem_impostos', document.getElementById('preco_venda_sem_impostos').innerText);
                 formData.append('preco_venda_com_impostos', document.getElementById('preco_venda_com_impostos').innerText);
 
+                const nomeCliente = document.getElementById('nome_cliente').value;
+                const numeroProposta = document.getElementById('numero_proposta').value;
+
+                formData.append('nome_cliente', nomeCliente);
+                formData.append('numero_proposta', numeroProposta);
+
                 fetch("{% url 'salvar_pdf_resumido' %}", {
-                method: 'POST',
-                body: formData,
-                headers: {
-                    'X-CSRFToken': '{{ csrf_token }}'
-                }
+                    method: 'POST',
+                    body: formData,
+                    headers: {
+                        'X-CSRFToken': '{{ csrf_token }}'
+                    }
                 })
                 .then(response => response.blob())
                 .then(blob => {
                     const url = window.URL.createObjectURL(blob);
                     const a = document.createElement('a');
 
-                    const cargo = document.getElementById('id_cargo').value || "Cargo";
-                    const dataBaixado = new Date().toLocaleDateString('pt-BR').replace(/\//g, '-');
-                    
-                    // Definir o nome do arquivo no formato desejado
-                    nome_arquivo = `Memorial-de-Calculo_${cargo}_${dataBaixado}.pdf`;
-                    
+                    const nome_arquivo = `Memorial-de-Calculo_${nomeCliente}-${numeroProposta}.pdf`;
+
                     a.href = url;
                     a.download = nome_arquivo;
                     document.body.appendChild(a);
@@ -372,6 +403,12 @@
                 formData.append('total_impostos', document.getElementById('total_impostos').innerText);
                 formData.append('preco_venda_com_impostos', document.getElementById('preco_venda_com_impostos').innerText);
 
+                const nomeCliente = document.getElementById('nome_cliente').value;
+                const numeroProposta = document.getElementById('numero_proposta').value;
+
+                formData.append('nome_cliente', nomeCliente);
+                formData.append('numero_proposta', numeroProposta);
+
                 fetch("{% url 'salvar_pdf_completo' %}", {
                     method: 'POST',
                     body: formData,
@@ -384,11 +421,7 @@
                     const url = window.URL.createObjectURL(blob);
                     const a = document.createElement('a');
 
-                    const cargo = document.getElementById('id_cargo').value || "Cargo";
-                    const dataBaixado = new Date().toLocaleDateString('pt-BR').replace(/\//g, '-');
-                    
-                    // Definir o nome do arquivo no formato desejado
-                    nome_arquivo = `Calculo-Alocacao-Pura_${cargo}_${dataBaixado}.pdf`;
+                    const nome_arquivo = `Calculo-Alocacao-Pura_${nomeCliente}-${numeroProposta}.pdf`;
 
                     a.href = url;
                     a.download = nome_arquivo;
@@ -505,6 +538,16 @@
                 vaInput.value = '0,00';
                 vtInput.value = '200,00';
                 gympassInput.value = '14,73';
+            });
+
+            document.getElementById('abrir-popup').addEventListener('click', function() {
+                $('#calcularModal').modal('hide');
+
+                $('#popupModal').modal('show');
+            });
+
+            $('#popupModal').on('shown.bs.modal', function () {
+                document.getElementById('popupForm').reset();
             });
             
         });

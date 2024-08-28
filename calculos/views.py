@@ -11,7 +11,7 @@ from reportlab.pdfgen import canvas
 from io import BytesIO
 from datetime import datetime
 
-CARGOS_FILE_PATH = 'D:/1Desktop/Documentos/My Web Sites/App py/ProjetoCastan/Cargos.xlsx'
+CARGOS_FILE_PATH = r'\\10.1.1.2\ti\BaseCalculos\Cargos.xlsx'
 
 def formatar_para_float(valor):
     """ Substitui a vírgula por ponto e converte para float. """
@@ -69,16 +69,16 @@ def salvar_pdf_completo(request):
         width, height = letter
 
         # Adicionar imagem ao PDF
-        imagem_path = r'D:\1Desktop\Documentos\My Web Sites\App py\ProjetoCastan\alocacao_pura\calculos\static\img\informatec_servicos_em_rh.jpg'
-        p.drawImage(imagem_path, 200, height - 100, width=200, height=100)
-
+        imagem_path = r'\\10.1.1.2\TI\BaseCalculos\static\img\informatec_servicos_em_rh.jpg'
+        p.drawImage(imagem_path, 125, height - 100, width=125, height=62.5)
+            
         # Adicionar título ao PDF
-        p.setFont("Helvetica-Bold", 16)
-        p.drawString(110, height - 130, titulo_pdf)
+        p.setFont("Helvetica-Bold", 14)
+        p.drawString(275, height - 70, titulo_pdf)
 
         # Adicionar data e hora ao PDF
-        p.setFont("Helvetica", 12)
-        p.drawString(110, height - 150, f"Gerado em: {agora}")
+        p.setFont("Helvetica", 11)
+        p.drawString(275, height - 85, f"Gerado em: {agora}")
 
         # Dados para tabela
         dados = {
@@ -127,7 +127,7 @@ def salvar_pdf_completo(request):
 
         # Adicionar a tabela na posição desejada
         table.wrapOn(p, width, height)
-        table.drawOn(p, 125, height - 600)
+        table.drawOn(p, 125, height - 540)
 
         # Finalizar o PDF
         p.showPage()
@@ -177,20 +177,20 @@ def salvar_pdf_resumido(request):
             width, height = letter
 
             # Adicionar imagem ao PDF
-            imagem_path = r'D:\1Desktop\Documentos\My Web Sites\App py\ProjetoCastan\alocacao_pura\calculos\static\img\informatec_servicos_em_rh.jpg'
-            p.drawImage(imagem_path, 200, height - 90, width=200, height=100)
+            imagem_path = r'\\10.1.1.2\TI\BaseCalculos\static\img\informatec_servicos_em_rh.jpg'
+            p.drawImage(imagem_path, 150, height - 100, width=125, height=62.5)
             
             # Adicionar título ao PDF
-            p.setFont("Helvetica-Bold", 16)
-            p.drawString(150, height - 120, titulo_pdf)
+            p.setFont("Helvetica-Bold", 14)
+            p.drawString(300, height - 70, titulo_pdf)
 
             # Adicionar data e hora ao PDF
-            p.setFont("Helvetica", 12)
-            p.drawString(150, height - 140, f"Gerado em: {agora}")
+            p.setFont("Helvetica", 11)
+            p.drawString(300, height - 85, f"Gerado em: {agora}")
             
             # Adicionar conteúdo ao PDF
             p.setFont("Helvetica", 12)
-            y = height - 200
+            y = height - 120
             p.drawString(150, y, f"Salário: R${salario}")
             y -= 20
             p.drawString(150, y, f"Encargos Sociais: R${encargos_sociais}")
@@ -212,11 +212,13 @@ def salvar_pdf_resumido(request):
             p.save()
 
             buffer.seek(0)
-            return HttpResponse(buffer, content_type='application/pdf')
+
+            response = HttpResponse(buffer.getvalue(), content_type='application/pdf')
+            response['Content-Disposition'] = f'attachment; filename="Memorial-Calculo-{cargo}-{agora}.pdf"'
+            return response
         except Exception as e:
+            print(f"Erro ao gerar o PDF resumido: {e}")
             return HttpResponse(f"Erro ao gerar o PDF: {str(e)}", status=500)
-    else:
-        return HttpResponse("Método não permitido", status=405)
     
 def autocomplete_funcionarios(request):
     if request.method == 'GET':

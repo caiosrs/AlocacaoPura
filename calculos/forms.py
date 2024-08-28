@@ -6,7 +6,7 @@ from .models import CalculoAlocacaoPura
 from crispy_forms.helper import FormHelper
 from crispy_forms.layout import Submit
 
-CARGOS_FILE_PATH = 'D:/1Desktop/Documentos/My Web Sites/App py/ProjetoCastan/Cargos.xlsx'
+CARGOS_FILE_PATH = r'\\10.1.1.2\ti\BaseCalculos\Cargos.xlsx'
 
 class AlocacaoPuraForm(forms.ModelForm):
     class Meta:
