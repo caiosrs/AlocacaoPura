@@ -12,34 +12,47 @@
             <input type="text" id="id_cargo" name="cargo" class="form-control" autocomplete="off" placeholder="Digite o nome do cargo...">
             <div id="autocomplete-suggestions" class="autocomplete-suggestions"></div>
         </div>
+
+        <div class="form-row">
+            <div class="form-group col-md-12">
+                <label for="id_salario">Salário</label>
+                <div class="input-group">
+                    <div class="input-group-prepend">
+                        <span class="input-group-text">R$</span>
+                    </div>
+                    <input type="text" id="id_salario" name="salario" class="form-control" placeholder="0.000,00">
+                </div>
+            </div>
+        </div>
+        
         <div class="form-row">
             <div class="form-group col-md-6">
-                <label for="id_salario">Salário</label>
-                <input type="text" id="id_salario" name="salario" class="form-control" placeholder="R$ 0,00">
+                <label for="id_lucro">Lucro Desejável (%)</label>
+                <input type="text" id="id_lucro" name="lucro" class="form-control" value="15">
             </div>
             <div class="form-group col-md-6">
                 <label for="id_assistencia_medica">Assistência Médica</label>
-                <input type="text" id="id_assistencia_medica" name="assistencia_medica" class="form-control" value="450,00">
+                <input type="text" id="id_assistencia_medica" name="assistencia_medica" class="form-control" value="550,00">
             </div>
         </div>
         <div class="form-row">
             <div class="form-group col-md-6">
                 <label>Assistência Odontológica</label>
-                <input type="text" id="id_assistencia_odonto" name="assistencia_odonto" class="form-control" value="21,96">
+                <input type="text" id="id_assistencia_odonto" name="assistencia_odonto" class="form-control" value="30,00">
             </div>
             <div class="form-group col-md-6">
                 <label>Seguro</label>
-                <input type="text" id="id_seguro" name="seguro" class="form-control" value="7,27">
+                <input type="text" id="id_seguro" name="seguro" class="form-control" value="15,00">
             </div>
         </div>
         <div class="form-row">
             <div class="form-group col-md-6">
                 <label>Vale Refeição</label>
-                <input type="text" id="id_vr" name="vr" class="form-control" value="605,00">
+                <input type="text" id="id_vr" name="vr" class="form-control" value="638,00">
             </div>
             <div class="form-group col-md-6">
                 <label>Vale Alimentação</label>
-                <input type="text" id="id_va" name="va" class="form-control" value="0,00">
+                <input type="text" id="id_va" name="va" class="form-control" value="600,00">
             </div>
         </div>
         <div class="form-row">
@@ -49,7 +62,7 @@
             </div>
             <div class="form-group col-md-6">
                 <label>Gym Pass</label>
-                <input type="text" id="id_gympass" name="gympass" class="form-control" value="14,73">
+                <input type="text" id="id_gympass" name="gympass" class="form-control" value="20,00">
             </div>
         </div>
         <button type="button" class="btn btn-primary" id="calcular-btn" data-toggle="modal" data-target="#calcularModal">Calcular</button>
@@ -144,7 +157,7 @@
                                             <td id="despesas_operacionais"></td>
                                         </tr>
                                         <tr>
-                                            <td>Lucro 15%</td>
+                                            <td>Lucro (<span id="lucro_percentual"></span>%)</td>
                                             <td id="lucro"></td>
                                         </tr>
                                         <tr>
@@ -248,9 +261,22 @@
 
     <script>
         document.addEventListener('DOMContentLoaded', () => {
+        const lucroInput = document.getElementById('id_lucro');
+        const lucroPercentualSpan = document.getElementById('lucro_percentual');
+
+        function atualizarLucroPercentual() {
+            lucroPercentualSpan.textContent = lucroInput.value;
+        }
+
+        lucroInput.addEventListener('input', atualizarLucroPercentual);
+        atualizarLucroPercentual();
+    });
+
+        document.addEventListener('DOMContentLoaded', () => {
             const input = document.getElementById('id_cargo');
             const suggestionsContainer = document.getElementById('autocomplete-suggestions');
             const salarioInput = document.getElementById('id_salario');
+            const lucroInput = document.getElementById('id_lucro');
             const assistenciaMedicaInput = document.getElementById('id_assistencia_medica');
             const assistenciaOdontoInput = document.getElementById('id_assistencia_odonto');
             const seguroInput = document.getElementById('id_seguro');
@@ -274,6 +300,7 @@
 
             function calculateAndDisplayResults() {
                 const salario = parseValue(salarioInput.value);
+                const lucro = parseValue(lucroInput.value);
                 const assistenciaMedica = parseValue(assistenciaMedicaInput.value);
                 const assistenciaOdonto = parseValue(assistenciaOdontoInput.value);
                 const seguro = parseValue(seguroInput.value);
@@ -287,8 +314,8 @@
                 const totalBeneficios = assistenciaMedica + assistenciaOdonto + seguro + vr + va + vt + gympass;
                 const totalServicoPrestado = totalSalEncargos + totalBeneficios;
                 const despesasOperacionais = totalServicoPrestado * 0.05;
-                const lucro = totalServicoPrestado * 0.15;
-                const precoVendaSemImpostos = totalServicoPrestado + despesasOperacionais + lucro;
+                const lucroComServicos = totalServicoPrestado * (lucro / 100);
+                const precoVendaSemImpostos = totalServicoPrestado + despesasOperacionais + lucroComServicos;
                 const totalImpostos = 0.20;
                 const precoVendaComImpostos = precoVendaSemImpostos / (1 - totalImpostos);
 
@@ -318,7 +345,7 @@
                 document.getElementById('total_beneficios').textContent = formatNumber(totalBeneficios);
                 document.getElementById('total_servico_prestado').textContent = formatNumber(totalServicoPrestado);
                 document.getElementById('despesas_operacionais').textContent = formatNumber(despesasOperacionais);
-                document.getElementById('lucro').textContent = formatNumber(lucro);
+                document.getElementById('lucro').textContent = formatNumber(lucroComServicos);
                 document.getElementById('preco_venda_sem_impostos').textContent = formatNumber(precoVendaSemImpostos);
 
                 document.getElementById('iss').textContent = formatNumber(issCalculado);
@@ -346,9 +373,12 @@
                 formData.append('total_beneficios', document.getElementById('total_beneficios').innerText);
                 formData.append('total_servico_prestado', document.getElementById('total_servico_prestado').innerText);
                 formData.append('despesas_operacionais', document.getElementById('despesas_operacionais').innerText);
-                formData.append('lucro', document.getElementById('lucro').innerText);
+                formData.append('lucro', document.getElementById('lucro_percentual').innerText);
                 formData.append('preco_venda_sem_impostos', document.getElementById('preco_venda_sem_impostos').innerText);
                 formData.append('preco_venda_com_impostos', document.getElementById('preco_venda_com_impostos').innerText);
+
+                const lucroComServicos = parseFloat(document.getElementById('lucro').innerText.replace('.', '').replace(',', '.'));
+                formData.append('lucroComServicos', lucroComServicos.toFixed(2));
 
                 const nomeCliente = document.getElementById('nome_cliente').value;
                 const numeroProposta = document.getElementById('numero_proposta').value;
@@ -398,7 +428,7 @@
                 formData.append('total_beneficios', document.getElementById('total_beneficios').innerText);
                 formData.append('total_servico_prestado', document.getElementById('total_servico_prestado').innerText);
                 formData.append('despesas_operacionais', document.getElementById('despesas_operacionais').innerText);
-                formData.append('lucro', document.getElementById('lucro').innerText);
+                formData.append('lucro', document.getElementById('lucro_percentual').innerText);
                 formData.append('preco_venda_sem_impostos', document.getElementById('preco_venda_sem_impostos').innerText);
                 formData.append('total_impostos', document.getElementById('total_impostos').innerText);
                 formData.append('preco_venda_com_impostos', document.getElementById('preco_venda_com_impostos').innerText);
@@ -531,13 +561,14 @@
             document.getElementById('limpar-btn').addEventListener('click', () => {
                 input.value = '';
                 salarioInput.value = '0,00';
-                assistenciaMedicaInput.value = '450,00';
-                assistenciaOdontoInput.value = '21,96';
-                seguroInput.value = '7,27';
-                vrInput.value = '605,00';
-                vaInput.value = '0,00';
+                lucroInput.value = '15';
+                assistenciaMedicaInput.value = '550,00';
+                assistenciaOdontoInput.value = '30,00';
+                seguroInput.value = '15,00';
+                vrInput.value = '638,00';
+                vaInput.value = '600,00';
                 vtInput.value = '200,00';
-                gympassInput.value = '14,73';
+                gympassInput.value = '20,00';
             });
 
             document.getElementById('abrir-popup').addEventListener('click', function() {

@@ -1,0 +1,62 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Calculadora Simples</title>
+    <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css">
+</head>
+<body>
+    <div class="container mt-5">
+        <h2>Calculadora Simples</h2>
+        <form id="calc-form">
+            <div class="form-group">
+                <label for="input1">Número 1:</label>
+                <input type="number" id="input1" class="form-control" required>
+            </div>
+            <div class="form-group">
+                <label for="input2">Número 2:</label>
+                <input type="number" id="input2" class="form-control" required>
+            </div>
+            <button type="button" class="btn btn-primary" data-toggle="modal" data-target="#resultModal" onclick="calculate()">Calcular</button>
+        </form>
+    </div>
+
+    <!-- Modal -->
+    <div class="modal fade" id="resultModal" tabindex="-1" role="dialog" aria-labelledby="resultModalLabel" aria-hidden="true">
+        <div class="modal-dialog" role="document">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="resultModalLabel">Resultados Calculados</h5>
+                    <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                        <span aria-hidden="true">&times;</span>
+                    </button>
+                </div>
+                <div class="modal-body">
+                    <p><strong>Soma:</strong> <span id="sum-result"></span></p>
+                    <p><strong>Multiplicação:</strong> <span id="mul-result"></span></p>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-dismiss="modal">Fechar</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script src="https://code.jquery.com/jquery-3.5.1.slim.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/@popperjs/core@2.5.4/dist/umd/popper.min.js"></script>
+    <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/js/bootstrap.min.js"></script>
+    <script>
+        function calculate() {
+            const num1 = parseFloat(document.getElementById('input1').value);
+            const num2 = parseFloat(document.getElementById('input2').value);
+
+            const sum = num1 + num2;
+            const mul = num1 * num2;
+
+            document.getElementById('sum-result').textContent = sum.toFixed(2);
+            document.getElementById('mul-result').textContent = mul.toFixed(2);
+        }
+    </script>
+</body>
+</html>

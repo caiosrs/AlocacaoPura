@@ -24,6 +24,8 @@ def formatar_numero(valor):
 def salvar_pdf_completo(request):
     try:
         salario = formatar_para_float(request.POST.get('salario', '0'))
+        lucro_percentual = formatar_para_float(request.POST.get('lucro', '0'))
+
         assistencia_medica = formatar_para_float(request.POST.get('assistencia_medica', '0'))
         assistencia_odonto = formatar_para_float(request.POST.get('assistencia_odonto', '0'))
         seguro = formatar_para_float(request.POST.get('seguro', '0'))
@@ -37,8 +39,8 @@ def salvar_pdf_completo(request):
         total_beneficios = assistencia_medica + assistencia_odonto + seguro + vale_refeicao + vale_alimentacao + vale_transporte + gym_pass
         total_servico_prestado = total_sal_encargos + total_beneficios
         despesas_operacionais = total_servico_prestado * 0.05
-        lucro = total_servico_prestado * 0.15
-        preco_venda_sem_impostos = total_servico_prestado + despesas_operacionais + lucro
+        lucroComServicos = total_servico_prestado * (lucro_percentual/100)
+        preco_venda_sem_impostos = total_servico_prestado + despesas_operacionais + lucroComServicos
         total_impostos = 0.20
         preco_venda_com_impostos = preco_venda_sem_impostos / (1 - total_impostos)
 
@@ -69,8 +71,8 @@ def salvar_pdf_completo(request):
         width, height = letter
 
         # Adicionar imagem ao PDF
-        imagem_path = r'\\10.1.1.2\TI\BaseCalculos\static\img\informatec_servicos_em_rh.jpg'
-        p.drawImage(imagem_path, 125, height - 100, width=125, height=62.5)
+        imagem_path = r'\\10.1.1.2\TI\BaseCalculos\static\img\logotipo_principal_com_fundo.png'
+        p.drawImage(imagem_path, 125, height - 90, width=125, height=50)
             
         # Adicionar título ao PDF
         p.setFont("Helvetica-Bold", 14)
@@ -95,7 +97,7 @@ def salvar_pdf_completo(request):
             'Total Benefícios': formatar_numero(total_beneficios),
             'Total do Custo do Serviço Prestado': formatar_numero(total_servico_prestado),
             'Despesas Operacionais 5%': formatar_numero(despesas_operacionais),
-            'Lucro 15%': formatar_numero(lucro),
+            f'Lucro {lucro_percentual}%': formatar_numero(lucroComServicos),
             'Preço de Venda sem Impostos': formatar_numero(preco_venda_sem_impostos),
             'ISS': formatar_numero(iss_calculado),
             'PIS': formatar_numero(pis_calculado),
@@ -146,29 +148,18 @@ def salvar_pdf_completo(request):
 def salvar_pdf_resumido(request):
     if request.method == 'POST':
         try:
-            # Recebe o valor do cargo e monta o título do PDF
             cargo = request.POST.get('cargo', 'Desconhecido')
             titulo_pdf = f'Memorial de Cálculo | {cargo}'
             
-            # Formata os valores recebidos
             salario = formatar_para_float(request.POST.get('salario', '0'))
             encargos_sociais = formatar_para_float(request.POST.get('encargos_sociais', '0'))
             total_beneficios = formatar_para_float(request.POST.get('total_beneficios', '0'))
             total_servico_prestado = formatar_para_float(request.POST.get('total_servico_prestado', '0'))
             despesas_operacionais = formatar_para_float(request.POST.get('despesas_operacionais', '0'))
-            lucro = formatar_para_float(request.POST.get('lucro', '0'))
+            lucro_percentual = formatar_para_float(request.POST.get('lucro', '0'))
+            lucroComServicos = float(request.POST.get('lucroComServicos', '0'))
             preco_venda_sem_impostos = formatar_para_float(request.POST.get('preco_venda_sem_impostos', '0'))
             preco_venda_com_impostos = formatar_para_float(request.POST.get('preco_venda_com_impostos', '0'))
-
-            # Formata os valores para exibição
-            salario = formatar_numero(salario)
-            encargos_sociais = formatar_numero(encargos_sociais)
-            total_beneficios = formatar_numero(total_beneficios)
-            total_servico_prestado = formatar_numero(total_servico_prestado)
-            despesas_operacionais = formatar_numero(despesas_operacionais)
-            lucro = formatar_numero(lucro)
-            preco_venda_sem_impostos = formatar_numero(preco_venda_sem_impostos)
-            preco_venda_com_impostos = formatar_numero(preco_venda_com_impostos)
 
             agora = datetime.now().strftime('%d/%m/%Y %H:%M:%S')
 
@@ -177,8 +168,8 @@ def salvar_pdf_resumido(request):
             width, height = letter
 
             # Adicionar imagem ao PDF
-            imagem_path = r'\\10.1.1.2\TI\BaseCalculos\static\img\informatec_servicos_em_rh.jpg'
-            p.drawImage(imagem_path, 150, height - 100, width=125, height=62.5)
+            imagem_path = r'\\10.1.1.2\TI\BaseCalculos\static\img\logotipo_principal_com_fundo.png'
+            p.drawImage(imagem_path, 150, height - 90, width=125, height=50)
             
             # Adicionar título ao PDF
             p.setFont("Helvetica-Bold", 14)
@@ -191,22 +182,22 @@ def salvar_pdf_resumido(request):
             # Adicionar conteúdo ao PDF
             p.setFont("Helvetica", 12)
             y = height - 120
-            p.drawString(150, y, f"Salário: R${salario}")
+            p.drawString(150, y, f"Salário: R${formatar_numero(salario)}")
             y -= 20
-            p.drawString(150, y, f"Encargos Sociais: R${encargos_sociais}")
+            p.drawString(150, y, f"Encargos Sociais: R${formatar_numero(encargos_sociais)}")
             y -= 20
-            p.drawString(150, y, f"Total Benefícios: R${total_beneficios}")
+            p.drawString(150, y, f"Total Benefícios: R${formatar_numero(total_beneficios)}")
             y -= 20
-            p.drawString(150, y, f"Total do Serviço Prestado: R${total_servico_prestado}")
+            p.drawString(150, y, f"Total do Serviço Prestado: R${formatar_numero(total_servico_prestado)}")
             y -= 20
-            p.drawString(150, y, f"Despesas Operacionais: R${despesas_operacionais}")
+            p.drawString(150, y, f"Despesas Operacionais: R${formatar_numero(despesas_operacionais)}")
             y -= 20
-            p.drawString(150, y, f"Lucro: R${lucro}")
+            p.drawString(150, y, f"Lucro {lucro_percentual}%: R${formatar_numero(lucroComServicos)}")
             y -= 20
-            p.drawString(150, y, f"Preço de Venda sem Impostos: R${preco_venda_sem_impostos}")
+            p.drawString(150, y, f"Preço de Venda sem Impostos: R${formatar_numero(preco_venda_sem_impostos)}")
             y -= 20
             p.setFont("Helvetica-Bold", 12)
-            p.drawString(150, y, f"Preço de Venda com Impostos: R${preco_venda_com_impostos}")
+            p.drawString(150, y, f"Preço de Venda com Impostos: R${formatar_numero(preco_venda_com_impostos)}")
 
             p.showPage()
             p.save()
@@ -245,6 +236,8 @@ def calcular(request):
             df = pd.read_excel(CARGOS_FILE_PATH)
             salario = df.loc[df['Nome do Cargo'] == cargo, 'Salário'].values[0]
 
+            lucro_percentual = form.cleaned_data["lucro_percentual"]
+
             assistencia_medica = form.cleaned_data["assistencia_medica"]
             assistencia_odonto = form.cleaned_data["assistencia_odonto"]
             seguro = form.cleaned_data["seguro"]
@@ -260,9 +253,9 @@ def calcular(request):
             total_servico_prestado = total_sal_encargos + total_beneficios
 
             despesas_operacionais = total_servico_prestado * 0.05
-            lucro = total_servico_prestado * 0.15
+            lucroComServicos = total_servico_prestado * (lucro_percentual / 100)
 
-            preco_venda_sem_impostos = total_servico_prestado + despesas_operacionais + lucro
+            preco_venda_sem_impostos = total_servico_prestado + despesas_operacionais + lucroComServicos
 
             total_impostos = 0.20
             preco_venda_com_impostos = preco_venda_sem_impostos / (1 - total_impostos)
@@ -293,14 +286,15 @@ def calcular(request):
                 'Total Benefícios': formatar_numero(total_beneficios),
                 'Total do Custo do Serviço Prestado': formatar_numero(total_servico_prestado),
                 'Despesas Operacionais 5%': formatar_numero(despesas_operacionais),
-                'Lucro 15%': formatar_numero(lucro),
+                'lucroComServicos': lucroComServicos,
+                f'Lucro {(lucro_percentual/100)}%': formatar_numero(lucroComServicos),
                 'Preço de Venda sem Impostos': formatar_numero(preco_venda_sem_impostos),
                 'ISS': formatar_numero(iss_calculado),
                 'PIS': formatar_numero(pis_calculado),
                 'Cofins': formatar_numero(cofins_calculado),
                 'IR': formatar_numero(ir_calculado),
                 'CSLL': formatar_numero(csll_calculado),
-                'Total': formatar_numero(iss_calculado + pis_calculado + cofins_calculado + ir_calculado + csll_calculado),
+                'Total Impostos': formatar_numero(iss_calculado + pis_calculado + cofins_calculado + ir_calculado + csll_calculado),
                 'Preço de Venda com Impostos - Mês': formatar_numero(preco_venda_com_impostos)
             }
             return JsonResponse(context)
